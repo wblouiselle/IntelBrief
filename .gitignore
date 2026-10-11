@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Secrets
+.env
+
+# Local data
+data/*.db
+data/cache/
+
+# Generated reports (keep curated samples)
+reports/*
+!reports/samples/
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
