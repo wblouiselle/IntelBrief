@@ -134,7 +134,7 @@ streamlit run app.py      # dashboard (Phase 4)
 Update the checkboxes as work is completed.
 
 **Phase 1 — Foundation**
-- [ ] Project scaffolding, `pyproject.toml`, `.gitignore`, `.env.example`
+- [x] Project scaffolding, `pyproject.toml`, `.gitignore`, `.env.example`
 - [ ] SQLite schema and `db.py`
 - [ ] CISA KEV ingestion with tests
 - [ ] `intelbrief ingest` command working end to end
