@@ -14,8 +14,8 @@ from intelbrief import __version__
 # src/intelbrief/config.py -> the project root is two folders above the package.
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-# TODO: replace with the real GitHub repo URL once it exists.
-CONTACT_URL = "https://github.com/CHANGE-ME/intelbrief"
+# Sent in the User-Agent so feed operators can see who is calling and how to reach us.
+CONTACT_URL = "https://github.com/wblouiselle/IntelBrief"
 USER_AGENT = f"IntelBrief/{__version__} (+{CONTACT_URL})"
 
 CISA_KEV_URL = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
