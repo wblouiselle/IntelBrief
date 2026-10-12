@@ -5,15 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="A daily, readable view of the CISA Known Exploited Vulnerabilities catalog.">
 <title>$title</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="site-header">
-  <div class="container header-inner">
-    <a class="brand" href="index.html">IntelBrief</a>
-    <nav aria-label="Main">$nav</nav>
-  </div>
-</header>
+<div class="masthead">
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"></span>IntelBrief</a>
+      <nav aria-label="Main">$nav</nav>
+    </div>
+  </header>
+  <section class="hero">
+    <div class="container">
+$hero
+    </div>
+  </section>
+</div>
 <main class="container">
 $content
 </main>

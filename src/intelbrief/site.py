@@ -109,8 +109,13 @@ def _stat(value: int, label: str) -> str:
     return f'<div class="stat"><span class="stat-value">{value:,}</span>{label}</div>'
 
 
-def _page(filename: str, title: str, content: str, generated_at: datetime) -> str:
-    """Wrap page content in the shared layout (header, navigation, footer)."""
+def _hero(title: str, lede: str) -> str:
+    """The page title and intro shown on the dark band at the top of every page."""
+    return f'<h1>{title}</h1>\n<p class="lede">{lede}</p>'
+
+
+def _page(filename: str, title: str, hero: str, content: str, generated_at: datetime) -> str:
+    """Wrap a page's hero and content in the shared layout (header, navigation, footer)."""
     current = ' aria-current="page"'
     nav = "".join(
         f'<a href="{href}"{current if href == filename else ""}>{label}</a>'
@@ -119,13 +124,14 @@ def _page(filename: str, title: str, content: str, generated_at: datetime) -> st
     return Template(_asset("base.html")).substitute(
         title=escape(title),
         nav=nav,
+        hero=hero,
         content=content,
         updated=generated_at.strftime("%Y-%m-%d %H:%M UTC"),
         repo_url=CONTACT_URL,
     )
 
 
-def _overview(rows: list[sqlite3.Row], today: date) -> str:
+def _overview(rows: list[sqlite3.Row], today: date) -> tuple[str, str]:
     week_ago = (today - timedelta(days=7)).isoformat()
     cutoff = (today - timedelta(days=RECENT_DAYS)).isoformat()
     recent = [r for r in rows if (r["date_added"] or "") >= cutoff]
@@ -139,15 +145,15 @@ def _overview(rows: list[sqlite3.Row], today: date) -> str:
             f'<p class="empty">No vulnerabilities were added in the last {RECENT_DAYS} days.</p>'
         )
 
-    return f"""
-<section class="hero">
-  <h1>Known exploited vulnerabilities, made readable</h1>
-  <p class="lede">A daily view of the
+    hero = _hero(
+        'Known exploited vulnerabilities, <span class="accent">made readable</span>',
+        """A daily view of the
     <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog">CISA Known
     Exploited Vulnerabilities (KEV) catalog</a>: flaws attackers are confirmed to be using
     right now. If your organization runs one of these products, patching it should come
-    before almost anything else.</p>
-</section>
+    before almost anything else.""",
+    )
+    content = f"""
 <section class="stats" aria-label="Catalog statistics">
   {_stat(len(rows), "in the catalog")}
   {_stat(last_week, "added in the last 7 days")}
@@ -158,13 +164,18 @@ def _overview(rows: list[sqlite3.Row], today: date) -> str:
   <h2>Added in the last {RECENT_DAYS} days</h2>
   <p class="hint">CVE IDs link to the NVD entry; “CISA” links to the official KEV record.</p>
   {table}
-  <p><a href="catalog.html">Search the full catalog →</a></p>
+  <p><a class="more" href="catalog.html">Search the full catalog →</a></p>
 </section>"""
+    return hero, content
 
 
-def _catalog(rows: list[sqlite3.Row]) -> str:
-    return f"""
-<h1>Full KEV catalog</h1>
+def _catalog(rows: list[sqlite3.Row]) -> tuple[str, str]:
+    hero = _hero(
+        'Full KEV <span class="accent">catalog</span>',
+        f"All {len(rows):,} vulnerabilities CISA has confirmed are exploited in the wild, "
+        "newest first. Search by CVE, vendor, product or name.",
+    )
+    content = f"""
 <form class="filters" role="search" onsubmit="return false">
   <label for="q">Search CVE, vendor, product or vulnerability name</label>
   <input id="q" type="search" placeholder="e.g. Fortinet, Exchange, CVE-2024-" autocomplete="off">
@@ -173,6 +184,17 @@ def _catalog(rows: list[sqlite3.Row]) -> str:
 </form>
 {_kev_table(rows, "catalog")}
 <script src="filter.js"></script>"""
+    return hero, content
+
+
+def _about() -> tuple[str, str]:
+    hero = _hero(
+        'About <span class="accent">IntelBrief</span>',
+        "IntelBrief turns public vulnerability data into something a busy security team can "
+        "read in a few minutes. This site is rebuilt automatically every day from official "
+        "sources.",
+    )
+    return hero, _asset("about.html")
 
 
 def build_site(
@@ -187,9 +209,9 @@ def build_site(
     rows = load_kev(conn)
 
     pages = {
-        "index.html": ("IntelBrief: Known exploited vulnerabilities", _overview(rows, today)),
-        "catalog.html": ("Full KEV catalog · IntelBrief", _catalog(rows)),
-        "about.html": ("About · IntelBrief", _asset("about.html")),
+        "index.html": ("IntelBrief: Known exploited vulnerabilities", *_overview(rows, today)),
+        "catalog.html": ("Full KEV catalog · IntelBrief", *_catalog(rows)),
+        "about.html": ("About · IntelBrief", *_about()),
     }
 
     # Start from an empty folder so pages removed from the code don't linger online.
@@ -198,9 +220,9 @@ def build_site(
     out_dir.mkdir(parents=True)
 
     written = []
-    for filename, (title, content) in pages.items():
+    for filename, (title, hero, content) in pages.items():
         path = out_dir / filename
-        path.write_text(_page(filename, title, content, generated_at), encoding="utf-8")
+        path.write_text(_page(filename, title, hero, content, generated_at), encoding="utf-8")
         written.append(path)
     for name in STATIC_FILES:
         path = out_dir / name
