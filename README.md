@@ -15,3 +15,8 @@ py -3.13 -m venv .venv
 pip install -e ".[dev]"
 copy .env.example .env
 ```
+
+## Testing
+
+See [docs/TESTING.md](docs/TESTING.md) for running the test suite and checking the
+pipeline end to end.
