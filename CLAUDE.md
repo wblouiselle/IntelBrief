@@ -135,9 +135,9 @@ Update the checkboxes as work is completed.
 
 **Phase 1 — Foundation**
 - [x] Project scaffolding, `pyproject.toml`, `.gitignore`, `.env.example`
-- [ ] SQLite schema and `db.py`
-- [ ] CISA KEV ingestion with tests
-- [ ] `intelbrief ingest` command working end to end
+- [x] SQLite schema and `db.py`
+- [x] CISA KEV ingestion with tests
+- [x] `intelbrief ingest` command working end to end
 
 **Phase 2 — Enrichment and Prioritization**
 - [ ] NVD enrichment (CVSS, description, CWE) with rate limiting and caching
