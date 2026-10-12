@@ -25,9 +25,15 @@ logger = logging.getLogger(__name__)
 
 RECENT_DAYS = 30
 NAV_PAGES = [("index.html", "Overview"), ("catalog.html", "Full catalog"), ("about.html", "About")]
-STATIC_FILES = ["style.css", "filter.js"]
+STATIC_FILES = ["style.css", "filter.js", "author.jpg"]
+
+# Shown on the About page.
+AUTHOR_NAME = "Will Louiselle"
+SITE_LAUNCHED = "October 12, 2026"
 
 NVD_URL = "https://nvd.nist.gov/vuln/detail/"
+# Outside links open in a new tab; noopener stops the new page from controlling this one.
+NEW_TAB = 'target="_blank" rel="noopener noreferrer"'
 CISA_SEARCH_URL = (
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?search_api_fulltext="
 )
@@ -68,10 +74,11 @@ def _kev_row(row: sqlite3.Row) -> str:
         else '<span class="muted">Not known</span>'
     )
     return f"""
-<tr data-search="{escape(search_text)}" data-ransomware="{int(ransomware)}">
+<tr data-search="{escape(search_text)}" data-ransomware="{int(ransomware)}"
+    data-added="{escape(row["date_added"] or "")}" data-due="{escape(row["due_date"] or "")}">
   <td class="cve">
-    <a href="{NVD_URL}{quote(cve)}" rel="noopener">{escape(cve)}</a>
-    <a class="src" href="{CISA_SEARCH_URL}{quote(cve)}" rel="noopener">CISA</a>
+    <a href="{NVD_URL}{quote(cve)}" {NEW_TAB}>{escape(cve)}</a>
+    <a class="src" href="{CISA_SEARCH_URL}{quote(cve)}" {NEW_TAB}>CISA</a>
   </td>
   <td><strong>{_text(row["vendor_project"])}</strong><br>{_text(row["product"])}</td>
   <td>
@@ -162,7 +169,8 @@ def _overview(rows: list[sqlite3.Row], today: date) -> tuple[str, str]:
 </section>
 <section>
   <h2>Added in the last {RECENT_DAYS} days</h2>
-  <p class="hint">CVE IDs link to the NVD entry; “CISA” links to the official KEV record.</p>
+  <p class="hint">CVE IDs link to the NVD entry; “CISA” links to the official KEV record.
+    Links open in a new tab.</p>
   {table}
   <p><a class="more" href="catalog.html">Search the full catalog →</a></p>
 </section>"""
@@ -173,13 +181,21 @@ def _catalog(rows: list[sqlite3.Row]) -> tuple[str, str]:
     hero = _hero(
         'Full KEV <span class="accent">catalog</span>',
         f"All {len(rows):,} vulnerabilities CISA has confirmed are exploited in the wild, "
-        "newest first. Search by CVE, vendor, product or name.",
+        "newest first by default. Search, filter and sort by date below.",
     )
     content = f"""
 <form class="filters" role="search" onsubmit="return false">
   <label for="q">Search CVE, vendor, product or vulnerability name</label>
   <input id="q" type="search" placeholder="e.g. Fortinet, Exchange, CVE-2024-" autocomplete="off">
   <label class="check"><input id="ransomware-only" type="checkbox"> Ransomware use known</label>
+  <label class="sort">Sort by
+    <select id="sort">
+      <option value="added-desc">Date added (newest first)</option>
+      <option value="added-asc">Date added (oldest first)</option>
+      <option value="due-asc">Federal due date (soonest first)</option>
+      <option value="due-desc">Federal due date (latest first)</option>
+    </select>
+  </label>
   <p id="count" class="hint" aria-live="polite">{len(rows):,} vulnerabilities</p>
 </form>
 {_kev_table(rows, "catalog")}
@@ -194,6 +210,8 @@ def _about() -> tuple[str, str]:
         "read in a few minutes. This site is rebuilt automatically every day from official "
         "sources.",
     )
+    byline = f"Created by {escape(AUTHOR_NAME)} · First published {SITE_LAUNCHED}"
+    hero += f'\n<p class="byline">{byline}</p>'
     return hero, _asset("about.html")
 
 
@@ -225,8 +243,9 @@ def build_site(
         path.write_text(_page(filename, title, hero, content, generated_at), encoding="utf-8")
         written.append(path)
     for name in STATIC_FILES:
+        # Copied as raw bytes so images survive unchanged.
         path = out_dir / name
-        path.write_text(_asset(name), encoding="utf-8")
+        path.write_bytes(resources.files("intelbrief").joinpath("site_assets", name).read_bytes())
         written.append(path)
 
     logger.info("Built site with %d KEV entries into %s", len(rows), out_dir)

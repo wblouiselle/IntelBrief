@@ -48,14 +48,29 @@ def conn(tmp_path: Path) -> Iterator[sqlite3.Connection]:
 
 
 def build(conn: sqlite3.Connection, out_dir: Path) -> dict[str, str]:
+    """Build the site and return the text of each HTML page by file name."""
     site.build_site(conn, out_dir, today=TODAY, generated_at=GENERATED_AT)
-    return {p.name: p.read_text(encoding="utf-8") for p in out_dir.iterdir()}
+    return {p.name: p.read_text(encoding="utf-8") for p in out_dir.glob("*.html")}
 
 
 def test_builds_all_pages_and_static_files(conn: sqlite3.Connection, tmp_path: Path) -> None:
-    files = build(conn, tmp_path / "site")
-    assert set(files) == {"index.html", "catalog.html", "about.html", "style.css", "filter.js"}
+    out_dir = tmp_path / "site"
+    files = build(conn, out_dir)
+    assert {p.name for p in out_dir.iterdir()} == {
+        "index.html",
+        "catalog.html",
+        "about.html",
+        "style.css",
+        "filter.js",
+        "author.jpg",
+    }
     assert all("Updated 2026-10-12 11:30 UTC" in files[p] for p in ("index.html", "about.html"))
+
+
+def test_author_photo_is_copied_byte_for_byte(conn: sqlite3.Connection, tmp_path: Path) -> None:
+    build(conn, tmp_path / "site")
+    original = Path(site.__file__).parent / "site_assets" / "author.jpg"
+    assert (tmp_path / "site" / "author.jpg").read_bytes() == original.read_bytes()
 
 
 def test_overview_lists_only_recent_entries(conn: sqlite3.Connection, tmp_path: Path) -> None:
@@ -107,3 +122,23 @@ def test_rebuild_removes_stale_files(conn: sqlite3.Connection, tmp_path: Path) -
     out_dir.mkdir()
     (out_dir / "old-page.html").write_text("stale", encoding="utf-8")
     assert "old-page.html" not in build(conn, out_dir)
+
+
+def test_outside_links_open_in_new_tab_safely(conn: sqlite3.Connection, tmp_path: Path) -> None:
+    catalog = build(conn, tmp_path / "site")["catalog.html"]
+    nvd_link = 'href="https://nvd.nist.gov/vuln/detail/CVE-2026-0001" target="_blank"'
+    assert nvd_link in catalog
+    assert catalog.count('target="_blank"') == catalog.count('rel="noopener noreferrer"')
+
+
+def test_catalog_rows_carry_dates_for_sorting(conn: sqlite3.Connection, tmp_path: Path) -> None:
+    catalog = build(conn, tmp_path / "site")["catalog.html"]
+    assert 'id="sort"' in catalog
+    assert 'data-added="2026-10-10" data-due="2026-11-01"' in catalog
+
+
+def test_about_page_credits_author(conn: sqlite3.Connection, tmp_path: Path) -> None:
+    about = build(conn, tmp_path / "site")["about.html"]
+    assert f"Created by {site.AUTHOR_NAME}" in about
+    assert f"First published {site.SITE_LAUNCHED}" in about
+    assert "James Madison University" in about
