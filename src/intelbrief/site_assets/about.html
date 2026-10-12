@@ -1,0 +1,58 @@
+<div class="prose">
+<h1>About IntelBrief</h1>
+<p>IntelBrief turns public vulnerability data into something a busy security team can read
+in a few minutes. This site is rebuilt automatically every day from official sources.</p>
+
+<h2>Where the data comes from</h2>
+<p>The <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog">CISA Known
+Exploited Vulnerabilities (KEV) catalog</a> lists vulnerabilities that the U.S.
+Cybersecurity and Infrastructure Security Agency has confirmed are being exploited by
+attackers. Most published CVEs are never exploited; the ones in KEV are, which makes the
+catalog one of the best signals for what to patch first.</p>
+
+<h2>Reading the tables</h2>
+<dl>
+  <dt>CVE</dt>
+  <dd>The vulnerability's ID. It links to its entry in the U.S. National Vulnerability
+    Database (NVD); “CISA” links to the official KEV record.</dd>
+  <dt>Added</dt>
+  <dd>The date CISA added the vulnerability to KEV, meaning the date exploitation was
+    confirmed, not the date the flaw was discovered.</dd>
+  <dt>Federal due date</dt>
+  <dd>The deadline for U.S. federal civilian agencies to fix the vulnerability under
+    <a href="https://www.cisa.gov/news-events/directives/bod-22-01-reducing-significant-risk-known-exploited-vulnerabilities">Binding
+    Operational Directive 22-01</a>. It doesn't bind other organizations, but it's a
+    useful benchmark for urgency.</dd>
+  <dt>Ransomware use</dt>
+  <dd>“Known” means CISA has evidence the vulnerability was used in a ransomware campaign.
+    “Not known” means there's no public evidence yet, not that it is safe.</dd>
+</dl>
+
+<h2>What's coming</h2>
+<ul>
+  <li><strong>Exploit likelihood:</strong> <a href="https://www.first.org/epss/">FIRST EPSS</a>
+    scores estimating how likely each CVE is to be exploited in the next 30 days.</li>
+  <li><strong>Severity:</strong> CVSS scores and weakness types from the NVD.</li>
+  <li><strong>Prioritization:</strong> each CVE matched against the asset inventory of a
+    fictional regional hospital, with a 0–100 priority score and a breakdown of where
+    every point comes from.</li>
+  <li><strong>Daily briefing:</strong> a short AI-written summary for security teams and
+    leadership. The AI may use only the data on this site, and an automatic check flags
+    any CVE ID it mentions that isn't in the data.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+  <li>This is an independent educational project, not an official source. Confirm
+    details with CISA and NIST before acting on them.</li>
+  <li>The site is updated once a day, so very recent KEV additions may take up to a day
+    to appear.</li>
+  <li>The hospital used for prioritization is fictional. Its scores show the method;
+    your organization's priorities depend on what you actually run.</li>
+</ul>
+
+<h2>How it's built</h2>
+<p>A Python pipeline downloads the KEV feed, stores it in SQLite and generates these
+pages as plain HTML. GitHub Actions runs the tests and the pipeline every day and
+publishes the result to GitHub Pages. There is no server and no tracking.</p>
+</div>

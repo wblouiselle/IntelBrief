@@ -27,6 +27,7 @@ class Settings:
 
     db_path: Path
     cache_dir: Path
+    site_dir: Path
     user_agent: str
     http_timeout_seconds: float
 
@@ -43,6 +44,7 @@ def get_settings() -> Settings:
     return Settings(
         db_path=_resolve(os.getenv("INTELBRIEF_DB_PATH", "data/intelbrief.db")),
         cache_dir=_resolve(os.getenv("INTELBRIEF_CACHE_DIR", "data/cache")),
+        site_dir=_resolve(os.getenv("INTELBRIEF_SITE_DIR", "site")),
         user_agent=USER_AGENT,
         http_timeout_seconds=float(os.getenv("INTELBRIEF_HTTP_TIMEOUT", "30")),
     )

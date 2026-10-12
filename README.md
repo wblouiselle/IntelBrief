@@ -16,6 +16,16 @@ pip install -e ".[dev]"
 copy .env.example .env
 ```
 
+## Public website
+
+The pipeline publishes a readable, searchable view of the CISA KEV catalog to GitHub Pages,
+rebuilt every day by GitHub Actions (`.github/workflows/site.yml`). To build it locally:
+
+```powershell
+intelbrief ingest
+intelbrief site      # writes HTML to site/; open site/index.html in a browser
+```
+
 ## Testing
 
 See [docs/TESTING.md](docs/TESTING.md) for running the test suite and checking the

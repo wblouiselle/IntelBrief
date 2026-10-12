@@ -31,7 +31,7 @@ and discussed in interviews.
 - `anthropic` — Claude API for briefing generation
 - `python-dotenv` — load secrets from `.env`
 - `typer` — command-line interface
-- `streamlit` — dashboard (Phase 4)
+- Static HTML site (standard library templates) published to GitHub Pages
 - `pytest` — tests
 - `ruff` — linting and formatting
 

@@ -13,6 +13,9 @@ __pycache__/
 data/*.db
 data/cache/
 
+# Generated website (built and published by GitHub Actions)
+site/
+
 # Generated reports (keep curated samples)
 reports/*
 !reports/samples/

@@ -1,0 +1,61 @@
+# Rebuild the public website every day and publish it to GitHub Pages.
+# One-time setup: repo Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
+name: Publish site
+
+on:
+  schedule:
+    - cron: "30 11 * * *"   # every day at 11:30 UTC
+  push:
+    branches: [main]
+  workflow_dispatch:         # adds a "Run workflow" button in the Actions tab
+
+# Only what's needed: read the code, publish to Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two publishes at once.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      - name: Lint and test
+        run: |
+          ruff check .
+          ruff format --check .
+          pytest
+
+      - name: Pull feeds
+        run: intelbrief ingest
+
+      - name: Build site
+        run: intelbrief site
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

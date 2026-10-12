@@ -1,4 +1,4 @@
-"""Command-line interface: `intelbrief ingest`, `intelbrief score`, `intelbrief brief`.
+"""Command-line interface: `intelbrief ingest`, `site`, `score`, `brief`.
 
 This is the only module that talks to the user directly. It turns settings into real
 objects (database connection, HTTP session), calls the pipeline functions, and reports
@@ -10,7 +10,7 @@ from contextlib import closing
 
 import typer
 
-from intelbrief import config, db
+from intelbrief import config, db, site
 from intelbrief.http import build_session
 from intelbrief.ingest import cisa_kev
 
@@ -50,6 +50,16 @@ def ingest() -> None:
             raise typer.Exit(code=1) from exc
 
     typer.echo(f"CISA KEV: {written} entries stored in {settings.db_path}")
+
+
+@app.command(name="site")
+def build_site() -> None:
+    """Build the public static website from the database."""
+    settings = config.get_settings()
+    with closing(db.connect(settings.db_path)) as conn:
+        db.init_db(conn)
+        written = site.build_site(conn, settings.site_dir)
+    typer.echo(f"Website: {len(written)} files written to {settings.site_dir}")
 
 
 @app.command()

@@ -61,6 +61,19 @@ def test_ingest_failure_exits_nonzero_and_logs_failed_run(
         assert conn.execute("SELECT status FROM ingest_runs").fetchone()[0] == "failed"
 
 
+def test_site_builds_after_ingest(
+    monkeypatch: pytest.MonkeyPatch, tmp_settings: Path, tmp_path: Path
+) -> None:
+    monkeypatch.setenv("INTELBRIEF_SITE_DIR", str(tmp_path / "site"))
+    monkeypatch.setattr(cisa_kev, "fetch_kev", fake_fetch)
+    runner.invoke(app, ["ingest"])
+
+    result = runner.invoke(app, ["site"])
+
+    assert result.exit_code == 0, result.output
+    assert "CVE-2023-4966" in (tmp_path / "site" / "catalog.html").read_text(encoding="utf-8")
+
+
 @pytest.mark.parametrize("command", ["score", "brief"])
 def test_unimplemented_commands_exit_nonzero(command: str) -> None:
     result = runner.invoke(app, [command])

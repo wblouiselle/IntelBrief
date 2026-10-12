@@ -26,6 +26,10 @@ dev = [
 [tool.setuptools.packages.find]
 where = ["src"]
 
+# Ship the website templates and styles inside the installed package.
+[tool.setuptools.package-data]
+intelbrief = ["site_assets/*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
