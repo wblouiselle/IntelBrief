@@ -142,3 +142,11 @@ def test_about_page_credits_author(conn: sqlite3.Connection, tmp_path: Path) -> 
     assert f"Created by {site.AUTHOR_NAME}" in about
     assert f"First published {site.SITE_LAUNCHED}" in about
     assert "James Madison University" in about
+
+
+def test_about_page_has_contact_links(conn: sqlite3.Connection, tmp_path: Path) -> None:
+    about = build(conn, tmp_path / "site")["about.html"]
+    assert 'href="https://www.linkedin.com/in/will-louiselle/"' in about
+    # Contact goes through LinkedIn only; no email or phone number on the public page.
+    assert "mailto:" not in about
+    assert "tel:" not in about
