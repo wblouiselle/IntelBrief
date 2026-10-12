@@ -57,12 +57,14 @@ intelbrief/
 │   │   └── urlhaus.py      # abuse.ch URLhaus (Phase 4, optional)
 │   ├── assets.py           # load inventory, match CVEs to assets
 │   ├── scoring.py          # priority scoring logic
-│   └── briefing.py         # build prompt, call Claude API, save report
+│   ├── briefing.py         # build prompt, call Claude API, save report
+│   ├── site.py             # build the static website from the database
+│   └── site_assets/        # page template, CSS, search script, About page
 ├── reports/                # generated briefings as Markdown (gitignored except samples/)
-├── app.py                  # streamlit dashboard (Phase 4)
+├── site/                   # generated website (gitignored)
 ├── tests/
 └── .github/workflows/
-    └── daily.yml           # scheduled pipeline run (Phase 4)
+    └── site.yml            # daily pipeline run + GitHub Pages publish
 ```
 
 ## Data Sources
@@ -127,7 +129,7 @@ ruff check . && ruff format .
 intelbrief ingest         # pull feeds into SQLite
 intelbrief score          # match assets and compute priorities
 intelbrief brief          # generate today's briefing
-streamlit run app.py      # dashboard (Phase 4)
+intelbrief site           # build the static website into site/
 ```
 
 ## Roadmap
@@ -152,8 +154,9 @@ Update the checkboxes as work is completed.
 - [ ] Save one strong sample briefing to `reports/samples/` for the README
 
 **Phase 4 — Polish and Automation**
-- [ ] Streamlit dashboard
-- [ ] GitHub Actions daily run
+- [x] Public static website on GitHub Pages (KEV overview, searchable catalog, About)
+- [ ] Add scores, EPSS, and AI briefings to the website as Phases 2–3 land
+- [ ] GitHub Actions daily run (workflow written; confirm first successful run)
 - [ ] Stretch: MITRE ATT&CK technique mapping
 - [ ] Stretch: URLhaus indicator feed
 - [ ] README with architecture diagram, design decisions, limitations, sample output
